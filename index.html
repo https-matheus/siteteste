@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Site da Anna Julia Sales</title>
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --sidebar:#14232b;
+      --accent:#1e88e5;
+      --card:#ffffff;
+      --muted:#6b6f76;
+      --error:#e53935;
+      --success:#2e7d32;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter,Segoe UI,Arial;margin:0;background:var(--bg);color:#222}
+    /* --- LOGIN STYLES --- */
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #14232b 0%, #1a3a4a 100%);
+      padding: 1.5rem;
+    }
+    .login-card {
+      background: var(--card);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 460px;
+      padding: 2rem 2rem 2.2rem;
+      box-shadow: 0 25px 45px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease;
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .login-header .brand-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+    .login-header h1 {
+      font-size: 1.8rem;
+      margin: 0.5rem 0 0.25rem;
+      color: #1a2c38;
+    }
+    .login-header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .input-group {
+      margin-bottom: 1.4rem;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #2c3e44;
+      font-size: 0.85rem;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border: 1px solid #dce5ec;
+      border-radius: 18px;
+      font-size: 1rem;
+      transition: 0.2s;
+      background: #fff;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(30,136,229,0.1);
+    }
+    .login-btn {
+      background: var(--accent);
+      width: 100%;
+      padding: 0.9rem;
+      border: none;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+      margin-top: 0.5rem;
+    }
+    .login-btn:hover {
+      background: #0b5e9e;
+      transform: translateY(-1px);
+    }
+    .error-msg {
+      background: #ffebee;
+      color: var(--error);
+      padding: 0.7rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      text-align: center;
+      margin-top: 1rem;
+      display: none;
+    }
+    .demo-hint {
+      background: #f0f7fa;
+      margin-top: 1.8rem;
+      padding: 0.8rem;
+      border-radius: 18px;
+      font-size: 0.8rem;
+      text-align: center;
+      color: #2c6e8f;
+    }
+    /* --- SISTEMA PRINCIPAL (APP) --- */
+    .app{display:flex;min-height:100vh}
+    .sidebar{width:250px;background:var(--sidebar);color:#fff;padding:24px}
+    .brand{font-weight:700;font-size:20px;margin-bottom:18px}
+    .nav{list-style:none;padding:0;margin:0}
+    .nav li{padding:12px 10px;border-radius:8px;cursor:pointer;color:#dfe7ee}
+    .nav li:hover,.nav li.active{background:rgba(255,255,255,0.04);color:#fff}
+
+    .content{flex:1;padding:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+    .search input{padding:8px 12px;border-radius:8px;border:1px solid #e0e6ee}
+
+    .grid{display:flex;gap:18px;margin-bottom:18px;flex-wrap:wrap}
+    .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(23,37,55,0.06);flex:1}
+    .card h3,.card h4{margin:0 0 8px 0;color:var(--muted);font-weight:600}
+    .card .value{font-size:20px;font-weight:700}
+
+    .dashboard-filters{display:grid;grid-template-columns:1.2fr 0.9fr 0.9fr auto auto;gap:10px;align-items:end}
+    .field label{display:block;margin-bottom:6px;font-size:13px;color:var(--muted)}
+    input,select,textarea{padding:10px;border-radius:8px;border:1px solid #e5e7eb;width:100%;background:#fff;font:inherit}
+
+    table{width:100%;border-collapse:collapse;background:var(--card);border-radius:8px;overflow:hidden}
+    th,td{padding:12px 14px;text-align:left;border-bottom:1px solid #eef2f6}
+    th{background:#f6f8fb;color:#555}
+    tr:hover td{background:#f9fbff}
+    .actions button{margin-right:8px}
+
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border:none;border-radius:8px;cursor:pointer}
+    .btn.secondary{background:#6b7280}
+    .btn.logout-btn{background:#b33b2c;margin-left:8px}
+    .btn.profile-btn{background:#2c6e8f;margin-left:8px}
+
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,12,15,0.4);z-index:1000}
+    .modal .panel{width:640px;max-width:95%;background:#fff;padding:18px;border-radius:10px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+    .muted{color:var(--muted)}
+    .small{font-size:13px}
+    .list{margin:0;padding-left:18px}
+    .list li{margin:8px 0}
+    .success-msg{color:var(--success);font-size:0.8rem;margin-top:8px;text-align:center}
+
+    @media (max-width:900px){
+      .sidebar{display:none}
+      .app{flex-direction:column}
+      .grid{flex-direction:column}
+      .dashboard-filters{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<!-- TELA DE LOGIN -->
+<div id="loginContainer" class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="brand-icon">🚛</div>
+      <h1>Controle Financeiro Frota</h1>
+      <p>Gestão inteligente da sua frota by: Anna Julia Sales</p>
+    </div>
+    <form id="loginForm">
+      <div class="input-group">
+        <label>Usuário</label>
+        <input type="text" id="loginUsername" placeholder="admin" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label>Senha</label>
+        <input type="password" id="loginPassword" placeholder="••••••">
+      </div>
+      <button type="submit" class="login-btn" id="loginBtn">Acessar sistema</button>
+      <div id="loginErrorMessage" class="error-msg"></div>
+      <div class="demo-hint">
+        🔐 Usuário padrão: <strong>admin</strong> / senha: <strong>admin123</strong><br>
+        (após login, você pode alterar suas credenciais no perfil)
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- SISTEMA PRINCIPAL (protegido) -->
+<div id="appContainer" class="app" style="display: none;">
+  <aside class="sidebar">
+    <div class="brand"><span style="color:var(--accent)">Controle Financeiro</span> Frota CDD Goiânia</div>
+    <ul class="nav" id="menu">
+      <li data-page="dashboard" class="active">Dashboard</li>
+      <li data-page="veiculos">Veículos</li>
+      <li data-page="combustivel">Combustível</li>
+      <li data-page="manutencao">Manutenção</li>
+      <li data-page="relatorios">Relatórios</li>
+    </ul>
+    <hr style="margin:18px 0;border:none;height:1px;background:rgba(255,255,255,0.05)">
+    <div class="small muted">Armazenamento local • preparado para BD futuro</div>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">Dashboard</h2>
+        <div class="muted small">Visão geral dos custos e da frota</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="search"><input id="searchInput" placeholder="Pesquisar veículo, placa..."/></div>
+        <button class="btn" id="exportBtn">Exportar JSON</button>
+        <button class="btn profile-btn" id="profileButton">👤 Perfil</button>
+        <button class="btn logout-btn" id="logoutButton">Sair</button>
+      </div>
+    </div>
+
+    <section id="dashboard" class="page">
+      <div class="card" style="margin-bottom:18px">
+        <h3>Filtros do dashboard</h3>
+        <div class="dashboard-filters">
+          <div class="field">
+            <label for="dashVehicle">Placa do veículo</label>
+            <select id="dashVehicle">
+              <option value="all">Todos os veículos</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="dashStartMonth">Período inicial (mês/ano)</label>
+            <input type="month" id="dashStartMonth" />
+          </div>
+          <div class="field">
+            <label for="dashEndMonth">Período final (mês/ano)</label>
+            <input type="month" id="dashEndMonth" />
+          </div>
+          <button class="btn" id="applyDashFilter">Aplicar filtro</button>
+          <button class="btn secondary" id="clearDashFilter">Limpar</button>
+        </div>
+        <div class="small muted" id="dashFilterInfo" style="margin-top:10px">Mostrando: todos os veículos e todos os períodos.</div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Custo mensal</h3>
+          <div class="value" id="monthlyCost">R$ 0,00</div>
+          <div class="muted small">Média mensal de combustível + manutenção no recorte</div>
+        </div>
+        <div class="card">
+          <h3>Manutenções pendentes</h3>
+          <div class="value" id="pendingMaint">0</div>
+          <div class="muted small">Registros marcados como pendentes no recorte</div>
+        </div>
+        <div class="card">
+          <h3>Custo por KM</h3>
+          <div class="value" id="costPerKm">R$ 0,00</div>
+          <div class="muted small">Custo total dividido pela soma de KM dos veículos do recorte</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:18px;margin-top:12px;flex-wrap:wrap">
+        <div class="card" style="flex:1 1 480px;min-height:320px">
+          <h3>Custos por mês</h3>
+          <canvas id="costsChart"></canvas>
+        </div>
+        <div class="card" style="flex:1 1 320px;min-height:320px">
+          <h3>Distribuição de custos</h3>
+          <canvas id="breakdownChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Ranking dos veículos mais caros</h3>
+        <ul id="rankingList" class="list"></ul>
+      </div>
+    </section>
+
+    <section id="veiculos" class="page" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3>Veículos</h3>
+        <button class="btn" id="openAddVehicle">+ Adicionar veículo</button>
+      </div>
+      <table id="vehiclesTable">
+        <thead>
+          <tr><th>Nome</th><th>Placa</th><th>KM</th><th>Último custo</th><th>Custo Total</th><th>Ações</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="combustivel" class="page" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3>Abastecimentos</h3>
+        <button class="btn" id="openAddFuel">+ Registrar abastecimento</button>
+      </div>
+      <table id="fuelTable">
+        <thead>
+          <tr><th>Data</th><th>Veículo</th><th>Litros</th><th>Preço/L</th><th>Custo</th><th>KM</th><th>Ações</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="manutencao" class="page" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3>Manutenções</h3>
+        <button class="btn" id="openAddMaint">+ Registrar manutenção</button>
+      </div>
+      <table id="maintTable">
+        <thead>
+          <tr><th>Data</th><th>Veículo</th><th>Descrição</th><th>Custo</th><th>Status</th><th>Ações</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="relatorios" class="page" style="display:none">
+      <h3>Relatórios e exportação</h3>
+      <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+        <div class="card" style="flex:1 1 300px">
+          <h4>Resumo</h4>
+          <div class="muted small">Total geral de custos</div>
+          <div style="margin-top:8px"><strong id="totalGeral">R$ 0,00</strong></div>
+        </div>
+        <div class="card" style="flex:2 1 480px">
+          <h4>Exportar (CSV / JSON / PDF)</h4>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn" id="exportCSV">Exportar CSV</button>
+            <button class="btn secondary" id="importJSON">Importar JSON</button>
+            <button class="btn" onclick="gerarPDF()">Exportar PDF</button>
+            <input type="file" id="fileInput" style="display:none" accept="application/json"/>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:18px">
+        <h4>Filtros rápidos</h4>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <select id="filterVehicle"><option value="all">Todos os veículos</option></select>
+          <input type="month" id="filterMonth">
+          <button class="btn" id="applyFilter">Aplicar</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modalRoot" style="display:none"></div>
+
+<script>
+  // ----------------------------- AUTENTICAÇÃO EVOLUÍDA (usuário administrador + edição) -------------------------
+  const AUTH_USER_KEY = 'auth_user_v1';     // armazena { username, password }
+  const SESSION_KEY = 'fleet_auth_session'; // sessão atual
+
+  // Cria usuário admin padrão se não existir
+  function createDefaultAdmin() {
+    const stored = localStorage.getItem(AUTH_USER_KEY);
+    if (!stored) {
+      const defaultAdmin = {
+        username: 'admin',
+        password: 'admin123'   // em produção isso seria hash, mas para demo local é texto claro
+      };
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(defaultAdmin));
+      return defaultAdmin;
+    }
+    try {
+      return JSON.parse(stored);
+    } catch(e) {
+      const defaultAdmin = { username: 'admin', password: 'admin123' };
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(defaultAdmin));
+      return defaultAdmin;
+    }
+  }
+
+  // Obtém usuário atual armazenado
+  function getStoredUser() {
+    const raw = localStorage.getItem(AUTH_USER_KEY);
+    if (!raw) return createDefaultAdmin();
+    try {
+      return JSON.parse(raw);
+    } catch(e) {
+      return createDefaultAdmin();
+    }
+  }
+
+  // Valida credenciais contra o usuário salvo
+  function validateLogin(username, password) {
+    const user = getStoredUser();
+    return (user.username === username && user.password === password);
+  }
+
+  // Atualiza as credenciais (username e senha)
+  function updateUserCredentials(newUsername, newPassword) {
+    if (!newUsername || newUsername.trim() === '') return false;
+    if (!newPassword || newPassword.length < 4) return false;
+    const updatedUser = {
+      username: newUsername.trim(),
+      password: newPassword
+    };
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
+    // Se houver sessão ativa, atualiza o nome de usuário na sessão para manter o login
+    const session = sessionStorage.getItem(SESSION_KEY);
+    if (session) {
+      try {
+        const sessionData = JSON.parse(session);
+        if (sessionData.authenticated) {
+          sessionData.username = updatedUser.username;
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+        }
+      } catch(e) {}
+    }
+    return true;
+  }
+
+  // Login (substitui o mock anterior)
+  function login(username, password) {
+    if (validateLogin(username, password)) {
+      const sessionData = {
+        username: username,
+        authenticated: true,
+        token: 'local-session-token'
+      };
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
+      return true;
+    }
+    return false;
+  }
+
+  function logout() {
+    sessionStorage.removeItem(SESSION_KEY);
+  }
+
+  function isAuthenticated() {
+    const session = sessionStorage.getItem(SESSION_KEY);
+    if (!session) return false;
+    try {
+      const data = JSON.parse(session);
+      return data && data.authenticated === true;
+    } catch(e) { return false; }
+  }
+
+  function guardRoute() {
+    if (!isAuthenticated()) {
+      document.getElementById('appContainer').style.display = 'none';
+      document.getElementById('loginContainer').style.display = 'flex';
+      return false;
+    }
+    return true;
+  }
+
+  function loadUserSession() {
+    if (isAuthenticated()) {
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('appContainer').style.display = 'flex';
+      renderAll();   // renderiza toda a interface com dados da frota
+    } else {
+      document.getElementById('loginContainer').style.display = 'flex';
+      document.getElementById('appContainer').style.display = 'none';
+    }
+  }
+
+  // ----------------------------- PERSISTÊNCIA DA FROTA (localStorage) - NÃO ALTERADO -------------------------
+  const STORAGE_KEY = 'frotaData_v1';
+
+  const sampleData = {
+    vehicles:[
+      {id:'v1', name:'Caminhão 01', plate:'ABC-1234', km:120000},
+      {id:'v2', name:'Van 02', plate:'DEF-5678', km:80000}
+    ],
+    fuels:[
+      {id:'f1', vehicleId:'v1', date:'2026-02-20', liters:150, pricePer:5.20, km:119500},
+      {id:'f2', vehicleId:'v2', date:'2026-02-22', liters:80, pricePer:5.00, km:79900}
+    ],
+    maintenances:[
+      {id:'m1', vehicleId:'v1', date:'2026-01-15', description:'Troca de óleo', cost:450, status:'concluída'},
+      {id:'m2', vehicleId:'v2', date:'2026-02-05', description:'Troca de pastilha', cost:600, status:'pendente'}
+    ]
+  };
+
+  function normalizeState(input){
+    const s = input && typeof input === 'object' ? input : {};
+    return {
+      vehicles: Array.isArray(s.vehicles) ? s.vehicles : [],
+      fuels: Array.isArray(s.fuels) ? s.fuels : [],
+      maintenances: Array.isArray(s.maintenances) ? s.maintenances : []
+    };
+  }
+
+  function loadData(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){
+      const initial = JSON.parse(JSON.stringify(sampleData));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      return initial;
+    }
+    try{
+      return normalizeState(JSON.parse(raw));
+    }catch{
+      const fallback = JSON.parse(JSON.stringify(sampleData));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fallback));
+      return fallback;
+    }
+  }
+
+  function saveData(data){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeState(data)));
+  }
+
+  let state = loadData();
+
+  function uid(prefix='id'){ return prefix + Math.random().toString(36).slice(2,9); }
+  function money(v){ return 'R$ ' + Number(v || 0).toFixed(2).replace('.',','); }
+
+  let dashboardFilter = { vehicleId:'all', startMonth:'', endMonth:'' };
+
+  // elementos DOM e gráficos
+  const menu = document.getElementById('menu');
+  const pages = document.querySelectorAll('.page');
+  const pageTitle = document.getElementById('pageTitle');
+  let costsChart, breakdownChart;
+
+  // navegação entre abas
+  if(menu) {
+    menu.addEventListener('click', e=>{
+      const li = e.target.closest('li');
+      if(!li) return;
+      document.querySelectorAll('#menu li').forEach(n=>n.classList.remove('active'));
+      li.classList.add('active');
+      const page = li.dataset.page;
+      pages.forEach(p=>p.style.display = p.id===page ? '' : 'none');
+      pageTitle.textContent = li.textContent;
+      renderAll();
+    });
+  }
+
+  function monthInRange(month, start, end){
+    if(start && month < start) return false;
+    if(end && month > end) return false;
+    return true;
+  }
+
+  function getDashboardData(){
+    const selectedVehicleId = dashboardFilter.vehicleId;
+    const selectedStart = dashboardFilter.startMonth;
+    const selectedEnd = dashboardFilter.endMonth;
+
+    let vehicles = state.vehicles.slice();
+    let fuels = state.fuels.slice();
+    let maint = state.maintenances.slice();
+
+    if(selectedVehicleId !== 'all'){
+      vehicles = vehicles.filter(v => v.id === selectedVehicleId);
+      fuels = fuels.filter(f => f.vehicleId === selectedVehicleId);
+      maint = maint.filter(m => m.vehicleId === selectedVehicleId);
+    }
+
+    if(selectedStart || selectedEnd){
+      fuels = fuels.filter(f => monthInRange(String(f.date || '').slice(0,7), selectedStart, selectedEnd));
+      maint = maint.filter(m => monthInRange(String(m.date || '').slice(0,7), selectedStart, selectedEnd));
+      const vehicleIdsWithData = new Set([
+        ...fuels.map(f => f.vehicleId),
+        ...maint.map(m => m.vehicleId)
+      ]);
+      if(selectedVehicleId === 'all'){
+        vehicles = vehicles.filter(v => vehicleIdsWithData.has(v.id));
+      }
+    }
+    return { vehicles, fuels, maint };
+  }
+
+  function buildMonthsList(){
+    if(dashboardFilter.startMonth || dashboardFilter.endMonth){
+      const start = dashboardFilter.startMonth || dashboardFilter.endMonth;
+      const end = dashboardFilter.endMonth || dashboardFilter.startMonth;
+      const months = [];
+      let cursor = new Date(`${start}-01T00:00:00`);
+      const endDate = new Date(`${end}-01T00:00:00`);
+      while(cursor <= endDate){
+        months.push(cursor.toISOString().slice(0,7));
+        cursor.setMonth(cursor.getMonth() + 1);
+      }
+      return months;
+    }
+    const months = [];
+    for(let i=5;i>=0;i--){
+      const d = new Date();
+      d.setMonth(d.getMonth()-i);
+      months.push(d.toISOString().slice(0,7));
+    }
+    return months;
+  }
+
+  function formatRangeLabel(){
+    const startLabel = dashboardFilter.startMonth ? dashboardFilter.startMonth.replace('-', '/') : 'início';
+    const endLabel = dashboardFilter.endMonth ? dashboardFilter.endMonth.replace('-', '/') : 'fim';
+    if(!dashboardFilter.startMonth && !dashboardFilter.endMonth) return 'todos os períodos';
+    return `${startLabel} à ${endLabel}`;
+  }
+
+  function updateDashboardFilterInfo(){
+    const vehicleLabel = dashboardFilter.vehicleId === 'all'
+      ? 'todos os veículos'
+      : (state.vehicles.find(v=>v.id===dashboardFilter.vehicleId)?.plate || 'veículo selecionado');
+    const rangeLabel = formatRangeLabel();
+    const infoDiv = document.getElementById('dashFilterInfo');
+    if(infoDiv) infoDiv.textContent = `Mostrando: ${vehicleLabel} e ${rangeLabel}.`;
+  }
+
+  function renderDashboardVehicleFilter(){
+    const sel = document.getElementById('dashVehicle');
+    if(!sel) return;
+    const current = dashboardFilter.vehicleId || 'all';
+    sel.innerHTML = '<option value="all">Todos os veículos</option>';
+    state.vehicles.forEach(v => sel.insertAdjacentHTML('beforeend', `<option value="${v.id}">${v.plate}</option>`));
+    sel.value = state.vehicles.some(v => v.id === current) ? current : 'all';
+  }
+
+  function renderDashboard(){
+    const { vehicles, fuels, maint } = getDashboardData();
+    const fuelSum = fuels.reduce((s,f)=> s + (Number(f.liters || 0) * Number(f.pricePer || 0)), 0);
+    const maintSum = maint.reduce((s,m)=> s + Number(m.cost || 0), 0);
+    const totalCost = fuelSum + maintSum;
+    const totalKm = vehicles.reduce((s,v)=> s + Number(v.km || 0), 0);
+    const costPerKm = totalKm ? totalCost / totalKm : 0;
+    const pending = maint.filter(m => String(m.status || '').toLowerCase() === 'pendente').length;
+    const months = buildMonthsList();
+    const labels = months.map(m => {
+      const [y,mm] = m.split('-');
+      return `${mm}/${y.slice(2)}`;
+    });
+    const fuelData = months.map(m => fuels.filter(f => String(f.date || '').slice(0,7) === m).reduce((s,f)=> s + (Number(f.liters || 0) * Number(f.pricePer || 0)), 0));
+    const maintData = months.map(m => maint.filter(x => String(x.date || '').slice(0,7) === m).reduce((s,x)=> s + Number(x.cost || 0), 0));
+    const monthlyAverage = months.length ? (fuelData.reduce((a,b)=>a+b,0) + maintData.reduce((a,b)=>a+b,0)) / months.length : 0;
+
+    document.getElementById('monthlyCost').textContent = money(monthlyAverage);
+    document.getElementById('pendingMaint').textContent = pending;
+    document.getElementById('costPerKm').textContent = money(costPerKm);
+    updateDashboardFilterInfo();
+
+    const ctx = document.getElementById('costsChart').getContext('2d');
+    if(costsChart) costsChart.destroy();
+    costsChart = new Chart(ctx, {
+      type:'line',
+      data:{labels, datasets:[
+        {label:'Combustível', data:fuelData, tension:0.3},
+        {label:'Manutenção', data:maintData, tension:0.3}
+      ]},
+      options:{responsive:true, plugins:{legend:{position:'top'}}}
+    });
+
+    const ctx2 = document.getElementById('breakdownChart').getContext('2d');
+    if(breakdownChart) breakdownChart.destroy();
+    breakdownChart = new Chart(ctx2, {
+      type:'doughnut',
+      data:{labels:['Combustível','Manutenção'], datasets:[{data:[fuelSum, maintSum]}]},
+      options:{responsive:true}
+    });
+
+    const ranking = vehicles.map(v => {
+      const vFuel = fuels.filter(f => f.vehicleId === v.id).reduce((s,f)=> s + (Number(f.liters || 0) * Number(f.pricePer || 0)), 0);
+      const vMaint = maint.filter(m => m.vehicleId === v.id).reduce((s,m)=> s + Number(m.cost || 0), 0);
+      return { plate:v.plate, cost:vFuel + vMaint };
+    }).sort((a,b)=> b.cost - a.cost);
+    const rankingList = document.getElementById('rankingList');
+    rankingList.innerHTML = '';
+    if(!ranking.length){
+      rankingList.innerHTML = '<li>Nenhum registro encontrado com os filtros aplicados.</li>';
+    } else {
+      ranking.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.plate} — ${money(item.cost)}`;
+        rankingList.appendChild(li);
+      });
+    }
+  }
+
+  function renderVehicles(){
+    const tbody = document.querySelector('#vehiclesTable tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    state.vehicles.forEach(v=>{
+      const vehicleFuels = state.fuels.filter(f=>f.vehicleId===v.id);
+      const vehicleMaint = state.maintenances.filter(m=>m.vehicleId===v.id);
+      const lastFuel = vehicleFuels.slice(-1)[0];
+      const lastCost = lastFuel ? (Number(lastFuel.pricePer || 0) * Number(lastFuel.liters || 0)) : 0;
+      const totalCost = vehicleFuels.reduce((s,f)=>s + Number(f.liters || 0) * Number(f.pricePer || 0), 0) + vehicleMaint.reduce((s,m)=>s + Number(m.cost || 0), 0);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${v.name}</td><td>${v.plate}</td><td>${Number(v.km || 0).toLocaleString()}</td><td>${money(lastCost)}</td><td>${money(totalCost)}</td><td class="actions"><button class="btn" onclick="editVehicle('${v.id}')">Editar</button><button class='btn secondary' onclick="deleteVehicle('${v.id}')">Excluir</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderFuel(){
+    const tbody = document.querySelector('#fuelTable tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    state.fuels.slice().reverse().forEach(f=>{
+      const v = state.vehicles.find(x=>x.id===f.vehicleId) || {name:'-'};
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${f.date}</td><td>${v.name}</td><td>${f.liters}</td><td>${money(f.pricePer)}</td><td>${money(Number(f.liters || 0) * Number(f.pricePer || 0))}</td><td>${f.km}</td><td class='actions'><button class='btn' onclick="editFuel('${f.id}')">Editar</button><button class='btn secondary' onclick="deleteFuel('${f.id}')">Excluir</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderMaint(){
+    const tbody = document.querySelector('#maintTable tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    state.maintenances.slice().reverse().forEach(m=>{
+      const v = state.vehicles.find(x=>x.id===m.vehicleId) || {name:'-'};
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${m.date}</td><td>${v.name}</td><td>${m.description}</td><td>${money(m.cost)}</td><td>${m.status}</td><td class='actions'><button class='btn' onclick="editMaint('${m.id}')">Editar</button><button class='btn secondary' onclick="deleteMaint('${m.id}')">Excluir</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderReports(){
+    const totalFuel = state.fuels.reduce((s,f)=>s + (Number(f.liters || 0) * Number(f.pricePer || 0)),0);
+    const totalMaint = state.maintenances.reduce((s,m)=>s + Number(m.cost || 0),0);
+    document.getElementById('totalGeral').textContent = money(totalFuel + totalMaint);
+    const sel = document.getElementById('filterVehicle');
+    if(sel){
+      sel.innerHTML = '<option value="all">Todos os veículos</option>';
+      state.vehicles.forEach(v=> sel.insertAdjacentHTML('beforeend', `<option value="${v.id}">${v.name} (${v.plate})</option>`));
+    }
+  }
+
+  function renderAll(){
+    if(!isAuthenticated()) return;
+    renderDashboardVehicleFilter();
+    renderDashboard();
+    renderVehicles();
+    renderFuel();
+    renderMaint();
+    renderReports();
+  }
+
+  // ----- EVENTOS E CRUD (mantidos originais) -----
+  const dashVehicleEl = document.getElementById('dashVehicle');
+  const dashStartMonthEl = document.getElementById('dashStartMonth');
+  const dashEndMonthEl = document.getElementById('dashEndMonth');
+  if(document.getElementById('applyDashFilter')) {
+    document.getElementById('applyDashFilter').addEventListener('click', ()=>{
+      dashboardFilter.vehicleId = dashVehicleEl.value;
+      dashboardFilter.startMonth = dashStartMonthEl.value;
+      dashboardFilter.endMonth = dashEndMonthEl.value;
+      if(dashboardFilter.startMonth && dashboardFilter.endMonth && dashboardFilter.startMonth > dashboardFilter.endMonth){
+        [dashboardFilter.startMonth, dashboardFilter.endMonth] = [dashboardFilter.endMonth, dashboardFilter.startMonth];
+        dashStartMonthEl.value = dashboardFilter.startMonth;
+        dashEndMonthEl.value = dashboardFilter.endMonth;
+      }
+      renderAll();
+    });
+    document.getElementById('clearDashFilter').addEventListener('click', ()=>{
+      dashboardFilter = { vehicleId:'all', startMonth:'', endMonth:'' };
+      dashVehicleEl.value = 'all';
+      dashStartMonthEl.value = '';
+      dashEndMonthEl.value = '';
+      renderAll();
+    });
+  }
+
+  // CRUD global (mantido)
+  window.editVehicle = function(id){ const v = state.vehicles.find(x=>x.id===id); openModalVehicle(v); };
+  window.deleteVehicle = function(id){
+    if(!confirm('Excluir veículo? Isso removerá também registros associados.')) return;
+    state.vehicles = state.vehicles.filter(v=>v.id!==id);
+    state.fuels = state.fuels.filter(f=>f.vehicleId!==id);
+    state.maintenances = state.maintenances.filter(m=>m.vehicleId!==id);
+    saveData(state);
+    renderAll();
+  };
+  window.editFuel = function(id){ const v = state.fuels.find(x=>x.id===id); openModalFuel(v); };
+  window.deleteFuel = function(id){
+    if(!confirm('Excluir abastecimento?')) return;
+    state.fuels = state.fuels.filter(f=>f.id!==id);
+    saveData(state);
+    renderAll();
+  };
+  window.editMaint = function(id){ const v = state.maintenances.find(x=>x.id===id); openModalMaint(v); };
+  window.deleteMaint = function(id){
+    if(!confirm('Excluir item de manutenção?')) return;
+    state.maintenances = state.maintenances.filter(m=>m.id!==id);
+    saveData(state);
+    renderAll();
+  };
+
+  const modalRoot = document.getElementById('modalRoot');
+  function closeModal(){ modalRoot.style.display='none'; modalRoot.innerHTML=''; }
+
+  function openModalVehicle(v=null){
+    modalRoot.style.display='block';
+    modalRoot.innerHTML = `<div class="modal" id="modalVehicle"><div class="panel"><h3>${v? 'Editar' : 'Adicionar'} veículo</h3><div class="form-grid"><input id="veh_name" placeholder="Nome" value="${v? v.name : ''}"><input id="veh_plate" placeholder="Placa" value="${v? v.plate : ''}"><input id="veh_km" type="number" placeholder="KM atual" value="${v? v.km : 0}"></div><div style="margin-top:12px;text-align:right"><button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn" id="saveVeh">Salvar</button></div></div></div>`;
+    document.getElementById('saveVeh').onclick = ()=>{
+      const name = document.getElementById('veh_name').value.trim();
+      const plate = document.getElementById('veh_plate').value.trim();
+      const km = Number(document.getElementById('veh_km').value || 0);
+      if(!name || !plate){ alert('Preencha nome e placa'); return; }
+      if(v){ v.name = name; v.plate = plate; v.km = km; } 
+      else { state.vehicles.push({id:uid('v'), name, plate, km}); }
+      saveData(state); closeModal(); renderAll();
+    };
+  }
+  function openModalFuel(f=null){
+    const vehicleOptions = state.vehicles.map(v=>`<option value="${v.id}" ${f && f.vehicleId===v.id ? 'selected' : ''}>${v.name} (${v.plate})</option>`).join('');
+    modalRoot.style.display='block';
+    modalRoot.innerHTML = `<div class="modal"><div class="panel"><h3>${f? 'Editar' : 'Registrar'} abastecimento</h3><div class="form-grid"><input id="fuel_date" type="date" value="${f? f.date : new Date().toISOString().slice(0,10)}"><select id="fuel_vehicle">${vehicleOptions}</select><input id="fuel_liters" type="number" step="0.01" placeholder="Litros" value="${f? f.liters : ''}"><input id="fuel_price" type="number" step="0.01" placeholder="Preço por litro" value="${f? f.pricePer : ''}"><input id="fuel_km" type="number" placeholder="KM" value="${f? f.km : ''}"></div><div style="text-align:right"><button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn" id="saveFuel">Salvar</button></div></div></div>`;
+    document.getElementById('saveFuel').onclick = ()=>{
+      const date = document.getElementById('fuel_date').value;
+      const vehicleId = document.getElementById('fuel_vehicle').value;
+      const liters = Number(document.getElementById('fuel_liters').value || 0);
+      const pricePer = Number(document.getElementById('fuel_price').value || 0);
+      const km = Number(document.getElementById('fuel_km').value || 0);
+      if(!date || !vehicleId || liters<=0){ alert('Preencha os campos obrigatórios'); return; }
+      if(f){ f.date=date; f.vehicleId=vehicleId; f.liters=liters; f.pricePer=pricePer; f.km=km; } 
+      else { state.fuels.push({id:uid('f'), date, vehicleId, liters, pricePer, km}); }
+      saveData(state); closeModal(); renderAll();
+    };
+  }
+  function openModalMaint(m=null){
+    const vehicleOptions = state.vehicles.map(v=>`<option value="${v.id}" ${m && m.vehicleId===v.id ? 'selected' : ''}>${v.name} (${v.plate})</option>`).join('');
+    modalRoot.style.display='block';
+    modalRoot.innerHTML = `<div class="modal"><div class="panel"><h3>${m? 'Editar' : 'Registrar'} manutenção</h3><div class="form-grid"><input id="m_date" type="date" value="${m? m.date : new Date().toISOString().slice(0,10)}"><select id="m_vehicle">${vehicleOptions}</select><input id="m_cost" type="number" step="0.01" placeholder="Custo" value="${m? m.cost : ''}"><select id="m_status"><option value="pendente" ${m && m.status==='pendente' ? 'selected' : ''}>pendente</option><option value="concluída" ${m && m.status==='concluída' ? 'selected' : ''}>concluída</option></select><textarea id="m_desc" placeholder="Descrição" style="grid-column:1/3;height:80px">${m? m.description : ''}</textarea></div><div style="text-align:right"><button class="btn secondary" onclick="closeModal()">Cancelar</button><button class="btn" id="saveMaint">Salvar</button></div></div></div>`;
+    document.getElementById('saveMaint').onclick = ()=>{
+      const date = document.getElementById('m_date').value;
+      const vehicleId = document.getElementById('m_vehicle').value;
+      const cost = Number(document.getElementById('m_cost').value || 0);
+      const status = document.getElementById('m_status').value;
+      const description = document.getElementById('m_desc').value;
+      if(!date || !vehicleId || cost<=0){ alert('Preencha os campos obrigatórios'); return; }
+      if(m){ m.date=date; m.vehicleId=vehicleId; m.cost=cost; m.status=status; m.description=description; } 
+      else { state.maintenances.push({id:uid('m'), date, vehicleId, cost, status, description}); }
+      saveData(state); closeModal(); renderAll();
+    };
+  }
+  window.openModalVehicle = openModalVehicle;
+  window.openModalFuel = openModalFuel;
+  window.openModalMaint = openModalMaint;
+  if(document.getElementById('openAddVehicle')) document.getElementById('openAddVehicle').addEventListener('click', ()=>openModalVehicle());
+  if(document.getElementById('openAddFuel')) document.getElementById('openAddFuel').addEventListener('click', ()=>openModalFuel());
+  if(document.getElementById('openAddMaint')) document.getElementById('openAddMaint').addEventListener('click', ()=>openModalMaint());
+
+  // Exportações e filtros rápidos (originais)
+  document.getElementById('exportBtn')?.addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'frota-data.json'; a.click(); URL.revokeObjectURL(url);
+  });
+  document.getElementById('exportCSV')?.addEventListener('click', ()=>{
+    const header = 'data,veiculo,litros,preco_por_litro,custo,km';
+    const rows = state.fuels.map(f=>{ const v = state.vehicles.find(x=>x.id===f.vehicleId) || {name:'-'}; const custo = Number(f.liters || 0) * Number(f.pricePer || 0); return `${f.date},"${String(v.name).replace(/"/g,'""')}",${f.liters},${f.pricePer},${custo.toFixed(2)},${f.km}`; });
+    const blob = new Blob([header, ...rows].join('\n'), {type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='abastecimentos.csv'; a.click(); URL.revokeObjectURL(url);
+  });
+  document.getElementById('importJSON')?.addEventListener('click', ()=> document.getElementById('fileInput').click());
+  document.getElementById('fileInput')?.addEventListener('change', (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => { try{ state = normalizeState(JSON.parse(ev.target.result)); saveData(state); renderAll(); alert('Importado com sucesso'); } catch(err){ alert('Arquivo inválido'); } };
+    reader.readAsText(file);
+  });
+  document.getElementById('applyFilter')?.addEventListener('click', ()=>{
+    const vehicleId = document.getElementById('filterVehicle').value;
+    const month = document.getElementById('filterMonth').value;
+    let fuels = state.fuels.slice(), maint = state.maintenances.slice();
+    if(vehicleId && vehicleId !== 'all'){ fuels = fuels.filter(f=>f.vehicleId===vehicleId); maint = maint.filter(m=>m.vehicleId===vehicleId); }
+    if(month){ fuels = fuels.filter(f=>String(f.date || '').slice(0,7)===month); maint = maint.filter(m=>String(m.date || '').slice(0,7)===month); }
+    const total = fuels.reduce((s,f)=>s + Number(f.liters||0)*Number(f.pricePer||0),0) + maint.reduce((s,m)=>s + Number(m.cost||0),0);
+    alert('Total filtrado: ' + money(total));
+  });
+  const searchInput = document.getElementById('searchInput');
+  if(searchInput) searchInput.addEventListener('input', (e)=>{ if(!guardRoute()) return; const q = e.target.value.toLowerCase(); if(!q){ renderVehicles(); return; }
+    const tbody = document.querySelector('#vehiclesTable tbody'); tbody.innerHTML = '';
+    state.vehicles.filter(v=> v.name.toLowerCase().includes(q) || v.plate.toLowerCase().includes(q)).forEach(v=>{
+      const vehicleFuels = state.fuels.filter(f=>f.vehicleId===v.id); const vehicleMaint = state.maintenances.filter(m=>m.vehicleId===v.id);
+      const lastFuel = vehicleFuels.slice(-1)[0]; const lastCost = lastFuel ? (Number(lastFuel.pricePer || 0) * Number(lastFuel.liters || 0)) : 0;
+      const totalCost = vehicleFuels.reduce((s,f)=>s + Number(f.liters || 0) * Number(f.pricePer || 0),0) + vehicleMaint.reduce((s,m)=>s + Number(m.cost || 0),0);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${v.name}</td><td>${v.plate}</td><td>${Number(v.km || 0).toLocaleString()}</td><td>${money(lastCost)}</td><td>${money(totalCost)}</td><td class="actions"><button class="btn" onclick="editVehicle('${v.id}')">Editar</button><button class='btn secondary' onclick="deleteVehicle('${v.id}')">Excluir</button></td>`;
+      tbody.appendChild(tr);
+    });
+  });
+
+  window.gerarPDF = function(){ /* mantido original */ 
+    const { jsPDF } = window.jspdf; const doc = new jsPDF(); const { vehicles, fuels, maint } = getDashboardData();
+    const vehicleLabel = dashboardFilter.vehicleId === 'all' ? 'Todos os veículos' : (state.vehicles.find(v => v.id === dashboardFilter.vehicleId)?.plate || 'Veículo selecionado');
+    const periodLabel = (dashboardFilter.startMonth || dashboardFilter.endMonth) ? `${dashboardFilter.startMonth || 'início'} à ${dashboardFilter.endMonth || 'fim'}` : 'Todos os períodos';
+    const totalCombustivel = fuels.reduce((s,f)=> s + Number(f.liters || 0) * Number(f.pricePer || 0), 0);
+    const totalManutencao = maint.reduce((s,m)=> s + Number(m.cost || 0), 0);
+    const totalGeral = totalCombustivel + totalManutencao;
+    const totalKm = vehicles.reduce((s,v)=> s + Number(v.km || 0), 0);
+    const custoKm = totalKm ? totalGeral / totalKm : 0;
+    let y = 20; doc.setFontSize(18); doc.text('Relatório de Controle de Frotas', 20, y); y+=10; doc.setFontSize(10); doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), 20, y); y+=7; doc.text('Filtro de veículo: ' + vehicleLabel, 20, y); y+=7; doc.text('Filtro de período: ' + periodLabel, 20, y); y+=12; doc.setFontSize(13); doc.text('Resumo financeiro', 20, y); y+=8; doc.setFontSize(11); doc.text('Total combustível: ' + money(totalCombustivel), 20, y); y+=7; doc.text('Total manutenção: ' + money(totalManutencao), 20, y); y+=7; doc.text('Custo total da frota: ' + money(totalGeral), 20, y); y+=7; doc.text('Custo por KM: ' + money(custoKm), 20, y); y+=10; doc.setFontSize(13); doc.text('Ranking dos veículos no recorte', 20, y); y+=8; const ranking = vehicles.map(v => { const vFuel = fuels.filter(f=>f.vehicleId===v.id).reduce((s,f)=>s + Number(f.liters||0)*Number(f.pricePer||0),0); const vMaint = maint.filter(m=>m.vehicleId===v.id).reduce((s,m)=>s + Number(m.cost||0),0); return { plate:v.plate, cost:vFuel + vMaint }; }).sort((a,b)=>b.cost-a.cost); doc.setFontSize(11); if(!ranking.length){ doc.text('Nenhum registro encontrado com os filtros aplicados.', 20, y); } else { ranking.forEach(item => { if(y > 280){ doc.addPage(); y = 20; } doc.text(`${item.plate} — ${money(item.cost)}`, 20, y); y += 7; }); } doc.save('relatorio_frotas_filtrado.pdf');
+  };
+
+  // ---------- MODAL DE EDIÇÃO DE PERFIL (CREDENCIAIS) ----------
+  function openProfileModal() {
+    const currentUser = getStoredUser();
+    modalRoot.style.display = 'block';
+    modalRoot.innerHTML = `
+      <div class="modal" id="profileModal">
+        <div class="panel">
+          <h3>✏️ Editar credenciais</h3>
+          <div class="form-grid" style="margin-top:12px">
+            <input type="text" id="newUsername" placeholder="Novo usuário" value="${currentUser.username}">
+            <input type="password" id="newPassword" placeholder="Nova senha (mínimo 4 caracteres)">
+            <input type="password" id="confirmPassword" placeholder="Confirmar nova senha">
+          </div>
+          <div id="profileError" class="error-msg" style="margin-top:8px"></div>
+          <div id="profileSuccess" class="success-msg" style="display:none"></div>
+          <div style="margin-top:16px;text-align:right">
+            <button class="btn secondary" onclick="closeModal()">Cancelar</button>
+            <button class="btn" id="saveProfileBtn">Salvar alterações</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('saveProfileBtn').onclick = () => {
+      const newUser = document.getElementById('newUsername').value.trim();
+      const newPass = document.getElementById('newPassword').value;
+      const confirmPass = document.getElementById('confirmPassword').value;
+      const errorDiv = document.getElementById('profileError');
+      const successDiv = document.getElementById('profileSuccess');
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+      if (!newUser) {
+        errorDiv.textContent = 'O nome de usuário não pode ficar vazio.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      if (!newPass || newPass.length < 4) {
+        errorDiv.textContent = 'A senha deve ter pelo menos 4 caracteres.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      if (newPass !== confirmPass) {
+        errorDiv.textContent = 'As senhas não conferem.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      // Atualiza as credenciais
+      const updated = updateUserCredentials(newUser, newPass);
+      if (updated) {
+        successDiv.textContent = 'Credenciais atualizadas com sucesso! Você permanecerá logado.';
+        successDiv.style.display = 'block';
+        // Fecha o modal após 1.5s
+        setTimeout(() => {
+          closeModal();
+          // opcional: atualizar informação na sessão já foi feita dentro do updateUserCredentials
+        }, 1500);
+      } else {
+        errorDiv.textContent = 'Erro ao atualizar. Tente novamente.';
+        errorDiv.style.display = 'block';
+      }
+    };
+  }
+
+  // LOGOUT handler
+  document.getElementById('logoutButton')?.addEventListener('click', () => { logout(); loadUserSession(); });
+  document.getElementById('profileButton')?.addEventListener('click', () => { if(isAuthenticated()) openProfileModal(); });
+
+  // LOGIN handler (substituído pelo novo)
+  const loginForm = document.getElementById('loginForm');
+  if(loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const errorDiv = document.getElementById('loginErrorMessage');
+      if(!username || !password) {
+        errorDiv.textContent = 'Por favor, preencha usuário e senha.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+      if(login(username, password)) {
+        errorDiv.style.display = 'none';
+        loadUserSession();  // mostra app e renderiza
+      } else {
+        errorDiv.textContent = 'Usuário ou senha inválidos. Tente admin / admin123';
+        errorDiv.style.display = 'block';
+      }
+    });
+  }
+
+  // Inicialização: garante que o usuário admin exista e carrega sessão
+  createDefaultAdmin();
+  loadUserSession();
+</script>
+</body>
+</html>
